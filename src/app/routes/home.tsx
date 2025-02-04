@@ -134,6 +134,7 @@ export const App1 = (props: {
                   width: `calc(100%/${props.cols})`,
                   height: `${virtualRow.size}px`,
                   transform: `translateY(${virtualRow.start}px)`,
+                  background: data[virtualRow.index].avg_color,
                 }}
                 onClick={() => setSelectedIndex(virtualRow.index)}
               >
