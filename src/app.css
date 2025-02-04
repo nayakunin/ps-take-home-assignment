@@ -35,6 +35,8 @@ body {
 }
 
 @theme {
+  --color-background: white;
+  --color-border: #e2e8f0;
   --animate-in: "fade-in 0.3s ease-out";
   --animate-out: "fade-out 0.3s ease-out";
 }

@@ -21,12 +21,12 @@ type Photo = {
   alt: string;
 };
 
-type GetCuratedPhotosParams = {
+export type GetCuratedPhotosParams = {
   page?: number;
   per_page?: number;
 };
 
-type GetCuratedPhotosResponse = {
+export type GetCuratedPhotosResponse = {
   photos: Photo[];
   page: number;
   per_page: number;
