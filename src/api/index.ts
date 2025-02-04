@@ -45,7 +45,7 @@ export const getCuratedPhotos = async (params: GetCuratedPhotosParams = {}) => {
 
   const response = await fetch(url, {
     headers: {
-      Authorization: `Bearer ${process.env.PEXELS_API_KEY}`,
+      Authorization: import.meta.env.VITE_PEXELS_API_KEY,
     },
   });
 
