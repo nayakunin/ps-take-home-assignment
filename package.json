@@ -9,7 +9,8 @@
     "typecheck": "react-router typegen && tsc",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "eslint . --fix"
+    "lint": "eslint . --fix",
+    "prepare": "husky"
   },
   "dependencies": {
     "@react-router/node": "^7.1.5",
@@ -28,6 +29,8 @@
     "@types/react-dom": "^19.0.1",
     "eslint": "^9.19.0",
     "eslint-plugin-simple-import-sort": "^12.1.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3",
     "prettier": "3.4.2",
     "react-router-devtools": "^1.1.0",
     "tailwindcss": "^4.0.0",

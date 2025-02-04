@@ -6,7 +6,7 @@ import tseslint from "typescript-eslint";
 
 const baseConfig = tseslint.config(
   eslint.configs.recommended,
-  tseslint.configs.recommended,
+  tseslint.configs.strict,
   {
     files: ["**/+types/**/*.ts"],
     rules: {
