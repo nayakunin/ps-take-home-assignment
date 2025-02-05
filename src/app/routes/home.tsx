@@ -71,7 +71,12 @@ export const App1 = (props: {
         per_page: PER_PAGE,
       });
     },
-    getNextPageParam: (lastGroup) => lastGroup.page + 1,
+    getNextPageParam: (lastGroup) => {
+      if (lastGroup.total_results <= PER_PAGE * lastGroup.page) {
+        return null;
+      }
+      return lastGroup.page + 1;
+    },
     initialPageParam: 0,
     initialData: {
       pages: [props.initialData],
@@ -101,7 +106,6 @@ export const App1 = (props: {
 
   React.useEffect(() => {
     const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse();
-    console.log(lastItem);
 
     if (!lastItem) {
       return;
