@@ -2,6 +2,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import React, { useCallback, useEffect, useMemo } from "react";
+import { Link, useNavigate } from "react-router";
 
 import { getCuratedPhotos } from "@/api";
 import {
@@ -17,14 +18,13 @@ import { ScrollArea, ScrollAreaViewPort } from "@/components/scroll-area";
 
 import type { Route } from "./+types/home";
 import { useColumns } from "./hooks/use-columns";
-
 export const PER_PAGE = 80;
 
 export async function loader() {
   return await getCuratedPhotos({ page: 1, per_page: PER_PAGE });
 }
 
-export default function Home({ loaderData }: Route.ComponentProps) {
+export default function Home({ loaderData, params }: Route.ComponentProps) {
   const ref = React.useRef<HTMLDivElement | null>(null);
   const cols = useColumns();
   const [ready, setReady] = React.useState(false);
@@ -42,6 +42,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           cols={cols}
           containerWidth={ref.current!.clientWidth}
           initialData={loaderData}
+          selectedIndex={params.imageIndex ? parseInt(params.imageIndex) : null}
         />
       )}
     </div>
@@ -52,9 +53,10 @@ export const App1 = (props: {
   cols: number;
   containerWidth: number;
   initialData: Route.ComponentProps["loaderData"];
+  selectedIndex: number | null;
 }) => {
   const parentRef = React.useRef<HTMLDivElement | null>(null);
-  const [selectedIndex, setSelectedIndex] = React.useState<number | null>(null);
+  const navigate = useNavigate();
 
   const {
     data: queryData,
@@ -126,7 +128,8 @@ export const App1 = (props: {
         <ScrollAreaViewPort className="relative" ref={parentRef}>
           <div style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
             {rowVirtualizer.getVirtualItems().map((virtualRow) => (
-              <div
+              <Link
+                to={`/${virtualRow.index}`}
                 key={virtualRow.index}
                 className="absolute top-0"
                 style={{
@@ -136,7 +139,6 @@ export const App1 = (props: {
                   transform: `translateY(${virtualRow.start}px)`,
                   background: data[virtualRow.index].avg_color,
                 }}
-                onClick={() => setSelectedIndex(virtualRow.index)}
               >
                 <img
                   className="w-full cursor-pointer"
@@ -150,23 +152,23 @@ export const App1 = (props: {
                   sizes="(min-width: 1280px) 2560px, (min-width: 768px) 1280px, 100vw"
                   alt={data[virtualRow.index].alt}
                 />
-              </div>
+              </Link>
             ))}
           </div>
         </ScrollAreaViewPort>
       </ScrollArea>
       <Dialog
-        open={selectedIndex !== null}
-        onOpenChange={() => setSelectedIndex(null)}
+        open={props.selectedIndex !== null}
+        onOpenChange={() => navigate("/")}
       >
         <DialogPortal>
           <DialogOverlay />
           <DialogContent>
-            {selectedIndex !== null && (
+            {props.selectedIndex !== null && (
               <>
                 <DialogHeader>
                   <DialogTitle>
-                    Photo by {data[selectedIndex].photographer}
+                    Photo by {data[props.selectedIndex].photographer}
                   </DialogTitle>
                   <DialogDescription className="text-neutral-600">
                     Some description about the photo
@@ -176,14 +178,15 @@ export const App1 = (props: {
                   className="relative w-full"
                   style={{
                     aspectRatio:
-                      data[selectedIndex].width / data[selectedIndex].height,
+                      data[props.selectedIndex].width /
+                      data[props.selectedIndex].height,
                   }}
                 >
                   <div className="absolute inset-0 h-full w-full animate-pulse bg-neutral-200" />
                   <img
                     className="relative z-10"
-                    src={data[selectedIndex].src.original}
-                    alt={data[selectedIndex].alt}
+                    src={data[props.selectedIndex].src.original}
+                    alt={data[props.selectedIndex].alt}
                   />
                 </div>
               </>
