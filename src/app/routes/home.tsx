@@ -1,30 +1,16 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { useInfiniteQuery } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import React, { useCallback, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router";
 
-import { getCuratedPhotos } from "@/api";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogOverlay,
-  DialogPortal,
-  DialogTitle,
-} from "@/components/dialog";
 import { ScrollArea, ScrollAreaViewPort } from "@/components/scroll-area";
 
 import type { Route } from "./+types/home";
+import { DataLayer, type Query } from "./components/data-layer";
+import { ImageDetailsDialog } from "./components/image-details-dialog";
 import { useColumns } from "./hooks/use-columns";
-export const PER_PAGE = 80;
 
-export async function loader() {
-  return await getCuratedPhotos({ page: 1, per_page: PER_PAGE });
-}
-
-export default function Home({ loaderData, params }: Route.ComponentProps) {
+export default function Home({ params }: Route.ComponentProps) {
   const ref = React.useRef<HTMLDivElement | null>(null);
   const cols = useColumns();
   const [ready, setReady] = React.useState(false);
@@ -35,61 +21,57 @@ export default function Home({ loaderData, params }: Route.ComponentProps) {
     }
   }, []);
 
+  const selectedIndex = useMemo(() => {
+    if (params.imageIndex === undefined) {
+      return null;
+    }
+
+    const num = Number(params.imageIndex);
+    if (Number.isNaN(num)) {
+      return null;
+    }
+
+    return num;
+  }, [params.imageIndex]);
+
   return (
-    <div ref={ref} key={cols} className="h-screen w-screen">
-      {ready && (
-        <App1
-          cols={cols}
-          containerWidth={ref.current!.clientWidth}
-          initialData={loaderData}
-          selectedIndex={params.imageIndex ? parseInt(params.imageIndex) : null}
-        />
-      )}
+    <div
+      ref={ref}
+      key={`${cols}-${ref.current?.clientWidth}`}
+      className="h-screen w-screen"
+    >
+      <DataLayer enabled={ready}>
+        {(query) => (
+          <Masonry
+            cols={cols}
+            containerWidth={ref.current!.clientWidth}
+            query={query}
+            selectedIndex={selectedIndex}
+          />
+        )}
+      </DataLayer>
     </div>
   );
 }
 
-export const App1 = (props: {
+export const Masonry = (props: {
   cols: number;
   containerWidth: number;
-  initialData: Route.ComponentProps["loaderData"];
   selectedIndex: number | null;
+  query: Query;
 }) => {
   const parentRef = React.useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
 
-  const {
-    data: queryData,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-  } = useInfiniteQuery({
-    queryKey: ["photos"],
-    queryFn: async (ctx) => {
-      return await getCuratedPhotos({
-        page: ctx.pageParam,
-        per_page: PER_PAGE,
-      });
-    },
-    getNextPageParam: (lastGroup) => {
-      if (lastGroup.total_results <= PER_PAGE * lastGroup.page) {
-        return null;
-      }
-      return lastGroup.page + 1;
-    },
-    initialPageParam: 0,
-    initialData: {
-      pages: [props.initialData],
-      pageParams: [0],
-    },
-  });
-
   const data = useMemo(
-    () => queryData?.pages.flatMap((page) => page.photos),
-    [queryData],
+    () => props.query.data.pages.flatMap((page) => page?.photos),
+    [props.query.data],
   );
 
-  const getItemKey = useCallback((index: number) => data[index].id, [data]);
+  const getItemKey = useCallback(
+    (index: number) => data[index]?.id || 0,
+    [data],
+  );
 
   const rowVirtualizer = useVirtualizer({
     count: data.length,
@@ -113,16 +95,16 @@ export const App1 = (props: {
 
     if (
       lastItem.index >= data.length - 1 &&
-      hasNextPage &&
-      !isFetchingNextPage
+      props.query.hasNextPage &&
+      !props.query.isFetchingNextPage
     ) {
-      fetchNextPage();
+      props.query.fetchNextPage();
     }
   }, [
-    hasNextPage,
-    fetchNextPage,
     data.length,
-    isFetchingNextPage,
+    props.query.hasNextPage,
+    props.query.isFetchingNextPage,
+    props.query.fetchNextPage,
     rowVirtualizer.getVirtualItems(),
   ]);
 
@@ -155,49 +137,18 @@ export const App1 = (props: {
                   `}
                   sizes="(min-width: 1280px) 2560px, (min-width: 768px) 1280px, 100vw"
                   alt={data[virtualRow.index].alt}
+                  loading="lazy"
                 />
               </Link>
             ))}
           </div>
         </ScrollAreaViewPort>
       </ScrollArea>
-      <Dialog
+      <ImageDetailsDialog
         open={props.selectedIndex !== null}
-        onOpenChange={() => navigate("/")}
-      >
-        <DialogPortal>
-          <DialogOverlay />
-          <DialogContent>
-            {props.selectedIndex !== null && (
-              <>
-                <DialogHeader>
-                  <DialogTitle>
-                    Photo by {data[props.selectedIndex].photographer}
-                  </DialogTitle>
-                  <DialogDescription className="text-neutral-600">
-                    Some description about the photo
-                  </DialogDescription>
-                </DialogHeader>
-                <div
-                  className="relative w-full"
-                  style={{
-                    aspectRatio:
-                      data[props.selectedIndex].width /
-                      data[props.selectedIndex].height,
-                  }}
-                >
-                  <div className="absolute inset-0 h-full w-full animate-pulse bg-neutral-200" />
-                  <img
-                    className="relative z-10"
-                    src={data[props.selectedIndex].src.original}
-                    alt={data[props.selectedIndex].alt}
-                  />
-                </div>
-              </>
-            )}
-          </DialogContent>
-        </DialogPortal>
-      </Dialog>
+        data={props.selectedIndex ? data[props.selectedIndex] : null}
+        onClose={() => navigate("/")}
+      />
     </>
   );
 };

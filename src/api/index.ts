@@ -1,4 +1,4 @@
-type Photo = {
+export type Photo = {
   id: number;
   width: number;
   height: number;
