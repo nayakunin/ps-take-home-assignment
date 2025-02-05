@@ -1,100 +1,60 @@
-# Welcome to React Router!
-
-A modern, production-ready template for building full-stack React applications using React Router.
-
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
-
-## Features
-
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+# Picsart Take Home Assignment
 
 ## Getting Started
 
+### Prerequisites
+
+- Node.js (>= 22)
+- pnpm (>= 9)
+
 ### Installation
 
-Install the dependencies:
-
-```bash
-npm install
+```sh
+pnpm install
 ```
 
-### Development
+### Running the Project
 
-Start the development server with HMR:
+To start the development server:
 
-```bash
-npm run dev
+```sh
+pnpm dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+This will start the development server and you can view the application at `http://localhost:5173`.
 
-## Building for Production
+### Building the Project
 
-Create a production build:
+To build the project for production:
 
-```bash
-npm run build
+```sh
+pnpm build
 ```
 
-## Deployment
+The build artifacts will be stored in the `build/` directory.
 
-### Docker Deployment
+### Starting the Production Server
 
-This template includes three Dockerfiles optimized for different package managers:
+To start the production server:
 
-- `Dockerfile` - for npm
-- `Dockerfile.pnpm` - for pnpm
-- `Dockerfile.bun` - for bun
-
-To build and run using Docker:
-
-```bash
-# For npm
-docker build -t my-app .
-
-# For pnpm
-docker build -f Dockerfile.pnpm -t my-app .
-
-# For bun
-docker build -f Dockerfile.bun -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
+```sh
+pnpm start
 ```
 
-The containerized application can be deployed to any platform that supports Docker, including:
+This will serve the built application.
 
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
+## Design Decisions
 
-### DIY Deployment
+### Performance Optimization
 
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
+- **Virtualization**: The list of images is virtualized using `@tanstack/react-virtual` to render only the visible images.
+- **Image Loading**: The images have srcset and sizes attributes to load the appropriate image based on the screen size. This also loads the image progressively.
+- **Image Lazy Loading**: The images are lazy-loaded using the `loading="lazy"` attribute.
+- **Image Loading Placeholder**: The images have a placeholder to show the average background color while the actual image is loading.
 
-Make sure to deploy the output of `npm run build`
+- **Code Splitting**: The application is split into multiple chunks based on routes.
+- **Web Vital Optimization**: The application is optimized for web vitals like LCP, FID, and CLS.
 
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
+### Responsiveness
 
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
+The application is responsive, though it doesn't handle resizing the window. It is responsive as long as the screen stays the same after load.
